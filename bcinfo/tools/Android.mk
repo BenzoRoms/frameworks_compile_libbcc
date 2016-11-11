@@ -29,14 +29,14 @@ LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_SRC_FILES := \
   main.cpp
 
-LOCAL_SHARED_LIBRARIES := \
-  libbcinfo
-
 LOCAL_STATIC_LIBRARIES := \
   libLLVMBitReader \
   libLLVMBitWriter \
   libLLVMCore \
-  libLLVMSupport
+  libLLVMSupport \
+  libbcinfo_static
+
+LOCAL_SHARED_LIBRARIES := liblog
 
 LOCAL_CFLAGS += -D__HOST__
 
