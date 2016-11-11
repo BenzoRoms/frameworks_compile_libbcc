@@ -38,11 +38,23 @@ libbcinfo_STATIC_LIBRARIES := \
   libLLVMWrap \
   libLLVMBitReader_2_7 \
   libLLVMBitReader_3_0 \
-  libLLVMBitWriter_3_2
+  libLLVMBitWriter_3_2 \
+  libLLVMBitReader \
+  libLLVMCore \
+  libLLVMSupport
+
+libbcinfo_static_WHOLE_STATIC_LIBRARIES := \
+  libLLVMWrap \
+  libLLVMBitReader_2_7 \
+  libLLVMBitReader_3_0 \
+  libLLVMBitWriter_3_2 \
 
 LLVM_ROOT_PATH := external/llvm
 
 ifneq (true,$(DISABLE_LLVM_DEVICE_BUILDS))
+#=====================================================================
+# Shared library for the target to be used with RS runtime
+#=====================================================================
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libbcinfo
@@ -56,20 +68,47 @@ LOCAL_CFLAGS += $(local_cflags_for_libbcinfo)
 LOCAL_C_INCLUDES := $(libbcinfo_C_INCLUDES)
 
 LOCAL_STATIC_LIBRARIES := $(libbcinfo_STATIC_LIBRARIES)
-LOCAL_SHARED_LIBRARIES := libLLVM libcutils liblog
+LOCAL_SHARED_LIBRARIES := libcutils liblog
+
+LOCAL_LDFLAGS += -Wl,--version-script,${LOCAL_PATH}/libbcinfo.map
 
 include $(LLVM_ROOT_PATH)/llvm-device-build.mk
 include $(LLVM_GEN_ATTRIBUTES_MK)
 include $(BUILD_SHARED_LIBRARY)
+
+#=====================================================================
+# Static library for the target to be used with libbcc
+#=====================================================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libbcinfo_static
+LOCAL_MODULE_CLASS := STATIC_LIBRARIES
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_SRC_FILES := $(libbcinfo_SRC_FILES)
+
+LOCAL_CFLAGS += $(local_cflags_for_libbcinfo)
+
+LOCAL_C_INCLUDES := $(libbcinfo_C_INCLUDES)
+
+LOCAL_WHOLE_STATIC_LIBRARIES := $(libbcinfo_static_WHOLE_STATIC_LIBRARIES)
+
+include $(LLVM_ROOT_PATH)/llvm-device-build.mk
+include $(LLVM_GEN_ATTRIBUTES_MK)
+include $(BUILD_STATIC_LIBRARY)
+
 endif
 
 # Don't build for unbundled branches
 ifeq (,$(TARGET_BUILD_APPS))
 
+#=====================================================================
+# Static library for the host
+#=====================================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libbcinfo
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE := libbcinfo_static
+LOCAL_MODULE_CLASS := STATIC_LIBRARIES
 LOCAL_MODULE_HOST_OS := darwin linux windows
 LOCAL_IS_HOST_MODULE := true
 
@@ -79,24 +118,16 @@ LOCAL_CFLAGS += $(local_cflags_for_libbcinfo)
 
 LOCAL_C_INCLUDES := $(libbcinfo_C_INCLUDES)
 
-LOCAL_STATIC_LIBRARIES += $(libbcinfo_STATIC_LIBRARIES)
-LOCAL_STATIC_LIBRARIES += libcutils liblog
+LOCAL_WHOLE_STATIC_LIBRARIES := $(libbcinfo_static_WHOLE_STATIC_LIBRARIES)
 
 LOCAL_LDLIBS_darwin := -ldl -lpthread
 LOCAL_LDLIBS_linux := -ldl -lpthread
 
 include $(LOCAL_PATH)/../llvm-loadable-libbcc.mk
 
-ifneq ($(CAN_BUILD_HOST_LLVM_LOADABLE_MODULE),true)
-LOCAL_SHARED_LIBRARIES_linux += libLLVM
-LOCAL_ALLOW_UNDEFINED_SYMBOLS_linux := true
-endif
-LOCAL_SHARED_LIBRARIES_darwin += libLLVM
-LOCAL_SHARED_LIBRARIES_windows += libLLVM
-
 include $(LLVM_ROOT_PATH)/llvm-host-build.mk
 include $(LLVM_GEN_ATTRIBUTES_MK)
-include $(BUILD_HOST_SHARED_LIBRARY)
+include $(BUILD_HOST_STATIC_LIBRARY)
 
 endif # don't build for unbundled branches
 

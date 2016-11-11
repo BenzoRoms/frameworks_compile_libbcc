@@ -29,7 +29,6 @@ LOCAL_MODULE_HOST_OS := darwin linux windows
 
 LOCAL_SHARED_LIBRARIES := \
   libbcc \
-  libbcinfo \
   libLLVM
 
 LOCAL_C_INCLUDES := \

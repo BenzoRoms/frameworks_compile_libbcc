@@ -55,7 +55,9 @@ LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 
 LOCAL_WHOLE_STATIC_LIBRARIES := $(libbcc_WHOLE_STATIC_LIBRARIES)
 
-LOCAL_SHARED_LIBRARIES := libbcinfo libLLVM libdl libutils libcutils liblog libc++
+LOCAL_STATIC_LIBRARIES := libbcinfo_static
+
+LOCAL_SHARED_LIBRARIES := libLLVM libdl libutils libcutils liblog libc++
 
 # Modules that need get installed if and only if the target libbcc.so is
 # installed.
@@ -90,11 +92,10 @@ LOCAL_IS_HOST_MODULE := true
 LOCAL_WHOLE_STATIC_LIBRARIES += $(libbcc_WHOLE_STATIC_LIBRARIES)
 
 LOCAL_STATIC_LIBRARIES += \
+  libbcinfo_static \
   libutils \
   libcutils \
   liblog
-
-LOCAL_SHARED_LIBRARIES := libbcinfo
 
 LOCAL_LDLIBS_darwin := -ldl -lpthread
 LOCAL_LDLIBS_linux := -ldl -lpthread
